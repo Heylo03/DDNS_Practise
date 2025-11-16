@@ -1,43 +1,41 @@
 Vagrant.configure("2") do |config|
-  # Imagen base común
   config.vm.box = "ubuntu/jammy64"
-  # Red privada común a todas las VMs
-  config.vm.network "private_network", ip: "192.168.58.1", virtualbox__intnet: "ddns_lab", auto_network: false
-  # Servidor DNS - BIND9
-  config.vm.define "dns" do |dns|
-    dns.vm.hostname = "dns.example.test"
-    dns.vm.network "private_network", ip: "192.168.58.10", virtualbox__intnet: "ddns_lab"
+
+  # DNS Server
+  config.vm.define "dns-server" do |dns|
+    dns.vm.hostname = "dns-server"
+    dns.vm.network "private_network", ip: "192.168.58.10"
     dns.vm.provider "virtualbox" do |vb|
-      vb.name = "DNS_Server"
-      vb.memory = 512
+      vb.memory = "1024"
+      vb.cpus = 1
     end
+    dns.vm.provision "shell", path: "provision_dns.sh"
   end
-  # Servidor DHCP - ISC DHCP Server
-  config.vm.define "dhcp" do |dhcp|
-    dhcp.vm.hostname = "dhcp.example.test"
-    dhcp.vm.network "private_network", ip: "192.168.58.11", virtualbox__intnet: "ddns_lab"
+
+  # DHCP Server
+  config.vm.define "dhcp-server" do |dhcp|
+    dhcp.vm.hostname = "dhcp-server"
+    dhcp.vm.network "private_network", ip: "192.168.58.20"
     dhcp.vm.provider "virtualbox" do |vb|
-      vb.name = "DHCP_Server"
-      vb.memory = 512
+      vb.memory = "1024"
+      vb.cpus = 1
     end
-    dhcp.vm.provision "shell", inline: <<-SHELL
-      apt-get update -y
-      apt-get install -y isc-dhcp-server dnsutils
-      systemctl enable isc-dhcp-server
-    SHELL
+    dhcp.vm.provision "shell", path: "provision_dhcp.sh"
   end
-  #Cliente
-    config.vm.define "cliente" do |cli|
-    cli.vm.hostname = "cliente"
-    cli.vm.network "private_network", virtualbox__intnet: "ddns_lab", auto_config: false, type: "dhcp"
-    cli.vm.provider "virtualbox" do |vb|
-      vb.name = "Cliente_DHCP"
-      vb.memory = 256
+
+  # Cliente
+  config.vm.define "c1" do |c1|
+    c1.vm.hostname = "c1"
+    c1.vm.network "private_network", type: "dhcp"
+    c1.vm.provider "virtualbox" do |vb|
+      vb.memory = "512"
+      vb.cpus = 1
     end
-    cli.vm.provision "shell", inline: <<-SHELL
-      apt-get update -y
-      apt-get install -y net-tools iputils-ping dnsutils isc-dhcp-client
-      dhclient -v eth1 || true
+    c1.vm.provision "shell", inline: <<-SHELL
+      sudo apt update
+      sudo apt install -y isc-dhcp-client dnsutils
+      # Forzar renovación de DHCP al inicio
+      sudo dhclient -v
     SHELL
   end
 end
