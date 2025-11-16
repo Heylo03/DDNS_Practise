@@ -8,6 +8,7 @@ sudo apt install -y isc-dhcp-server
 # Copiar la clave TSIG generada desde el DNS (manual o vía shared folder)
 # Por simplicidad, se recrea la misma clave aquí (en práctica usar la misma que DNS)
 sudo tsig-keygen -a hmac-sha256 ddns-key > /etc/dhcp/ddns.key
+#Guardar clave en variable
 KEY_SECRET=$(grep secret /etc/dhcp/ddns.key | awk '{print $2}' | tr -d '";')
 
 sudo tee /etc/dhcp/ddns.key > /dev/null <<EOF

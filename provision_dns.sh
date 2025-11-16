@@ -7,6 +7,7 @@ sudo apt install -y bind9 bind9utils bind9-doc dnsutils
 
 # Generar clave TSIG
 sudo tsig-keygen -a hmac-sha256 ddns-key > /etc/bind/ddns.key
+#Guardar la clave en una variable
 KEY_SECRET=$(grep secret /etc/bind/ddns.key | awk '{print $2}' | tr -d '";')
 
 # Configurar named.conf.options

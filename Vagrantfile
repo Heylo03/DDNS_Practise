@@ -34,8 +34,6 @@ Vagrant.configure("2") do |config|
     c1.vm.provision "shell", inline: <<-SHELL
       sudo apt update
       sudo apt install -y isc-dhcp-client dnsutils
-      # Forzar renovación de DHCP al inicio
-      sudo dhclient -v
     SHELL
   end
 end
