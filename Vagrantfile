@@ -1,39 +1,35 @@
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/jammy64"
 
-  # DNS Server
+  # Carpeta compartida para TSIG key
+  config.vm.synced_folder "./shared", "/vagrant_shared"
+
+  # -------------------------------
+  # DNS SERVER
+  # -------------------------------
   config.vm.define "dns-server" do |dns|
+    dns.vm.box = "ubuntu/jammy64"
     dns.vm.hostname = "dns-server"
     dns.vm.network "private_network", ip: "192.168.58.10"
-    dns.vm.provider "virtualbox" do |vb|
-      vb.memory = "1024"
-      vb.cpus = 1
-    end
-    dns.vm.provision "shell", path: "provision_dns.sh"
+    dns.vm.provision "shell", path: "dns-setup.sh"
   end
 
-  # DHCP Server
+  # -------------------------------
+  # DHCP SERVER
+  # -------------------------------
   config.vm.define "dhcp-server" do |dhcp|
+    dhcp.vm.box = "ubuntu/jammy64"
     dhcp.vm.hostname = "dhcp-server"
     dhcp.vm.network "private_network", ip: "192.168.58.20"
-    dhcp.vm.provider "virtualbox" do |vb|
-      vb.memory = "1024"
-      vb.cpus = 1
-    end
-    dhcp.vm.provision "shell", path: "provision_dhcp.sh"
+    dhcp.vm.provision "shell", path: "dhcp-setup.sh"
   end
 
-  # Cliente
-  config.vm.define "c1" do |c1|
-    c1.vm.hostname = "c1"
-    c1.vm.network "private_network", type: "dhcp"
-    c1.vm.provider "virtualbox" do |vb|
-      vb.memory = "512"
-      vb.cpus = 1
-    end
-    c1.vm.provision "shell", inline: <<-SHELL
-      sudo apt update
-      sudo apt install -y isc-dhcp-client dnsutils
-    SHELL
+  # -------------------------------
+  # CLIENT
+  # -------------------------------
+  config.vm.define "client" do |client|
+    client.vm.box = "ubuntu/jammy64"
+    client.vm.hostname = "client1"
+    client.vm.network "private_network", ip: "192.168.58.101"
   end
+
 end

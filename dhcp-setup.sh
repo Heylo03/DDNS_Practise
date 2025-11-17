@@ -1,15 +1,13 @@
 #!/bin/bash
 set -e
 
-# Actualizar e instalar ISC-DHCP-Server
+echo "[DHCP] Instalando paquetes..."
 sudo apt update
-sudo apt install -y isc-dhcp-server
+sudo apt install -y isc-dhcp-server bind9utils
 
-# Copiar la clave TSIG generada desde el DNS (manual o vía shared folder)
-# Por simplicidad, se recrea la misma clave aquí (en práctica usar la misma que DNS)
-sudo tsig-keygen -a hmac-sha256 ddns-key > /etc/dhcp/ddns.key
-#Guardar clave en variable
-KEY_SECRET=$(grep secret /etc/dhcp/ddns.key | awk '{print $2}' | tr -d '";')
+# Copiar TSIG key desde DNS
+sudo cp /vagrant_shared/ddns.key /etc/dhcp/ddns.key
+KEY_SECRET=$(awk '/secret/ {print $2}' /etc/dhcp/ddns.key | tr -d '";')
 
 sudo tee /etc/dhcp/ddns.key > /dev/null <<EOF
 key "ddns-key" {
@@ -18,15 +16,14 @@ key "ddns-key" {
 };
 EOF
 
-# Configurar dhcpd.conf
+# Configuración dhcpd.conf
 sudo tee /etc/dhcp/dhcpd.conf > /dev/null <<EOF
 include "/etc/dhcp/ddns.key";
 
 option domain-name "pablo.test";
-option domain-name-servers 192.168.58.10, 8.8.8.8;
+option domain-name-servers 192.168.58.10;
 default-lease-time 86400;
 max-lease-time 691200;
-option routers 192.168.58.1;
 
 ddns-update-style interim;
 ddns-domainname "pablo.test.";
@@ -50,6 +47,11 @@ subnet 192.168.58.0 netmask 255.255.255.0 {
 }
 EOF
 
-# Reiniciar servicio DHCP
 sudo systemctl restart isc-dhcp-server
 sudo systemctl enable isc-dhcp-server
+
+sudo chmod 600 /etc/dhcp/ddns.key
+sudo chown root:root /etc/dhcp/ddns.key
+
+
+echo "[DHCP] Configuración completada."
