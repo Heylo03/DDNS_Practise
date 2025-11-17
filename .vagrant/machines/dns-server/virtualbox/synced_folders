@@ -1,0 +1,1 @@
+{"virtualbox":{"/vagrant_shared":{"guestpath":"/vagrant_shared","hostpath":"/home/alumnom/Escritorio/DDNS_Practise/DDNS_Practise/shared","disabled":false,"__vagrantfile":true},"/vagrant":{"guestpath":"/vagrant","hostpath":"/home/alumnom/Escritorio/DDNS_Practise/DDNS_Practise","disabled":false,"__vagrantfile":true}}}

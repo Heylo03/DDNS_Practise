@@ -53,5 +53,4 @@ sudo systemctl enable isc-dhcp-server
 sudo chmod 600 /etc/dhcp/ddns.key
 sudo chown root:root /etc/dhcp/ddns.key
 
-
 echo "[DHCP] Configuración completada."
